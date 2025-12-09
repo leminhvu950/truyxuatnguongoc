@@ -20,6 +20,16 @@ def init_directories():
 
 def load_data():
     """Đọc dữ liệu từ data.json, tạo file mới nếu chưa có"""
+    # Prefer ephemeral writable path (/tmp) on serverless if present
+    tmp_data_file = os.path.join('/tmp', config.DATA_FILE)
+    # If tmp file exists, prefer it
+    if os.path.exists(tmp_data_file):
+        try:
+            with open(tmp_data_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Lỗi đọc tmp data file: {e}")
+
     if os.path.exists(config.DATA_FILE):
         try:
             with open(config.DATA_FILE, 'r', encoding='utf-8') as f:
@@ -31,21 +41,52 @@ def load_data():
             print(f"Lỗi không xác định khi đọc data.json: {str(e)}")
             return {}
     else:
-        # Tạo file mới với cấu trúc rỗng
-        save_data({})
-        return {}
+        # Tạo file mới với cấu trúc rỗng (try to create in data dir, fallback to /tmp)
+        try:
+            save_data({})
+            return {}
+        except Exception:
+            # fallback: write to tmp
+            try:
+                os.makedirs(os.path.dirname(tmp_data_file), exist_ok=True)
+                with open(tmp_data_file, 'w', encoding='utf-8') as f:
+                    json.dump({}, f, ensure_ascii=False, indent=2)
+                return {}
+            except Exception as e:
+                print(f"Failed to create data file in /tmp: {e}")
+                return {}
 
 def save_data(data):
     """Lưu dữ liệu vào data.json"""
     try:
         with open(config.DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        return
     except Exception as e:
         print(f"Lỗi khi lưu data.json: {str(e)}")
-        raise
+        # fallback to /tmp
+        try:
+            tmp_path = os.path.join('/tmp', config.DATA_FILE)
+            os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
+            with open(tmp_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"Saved data.json to tmp: {tmp_path}")
+            return
+        except Exception as e2:
+            print(f"Failed to save data.json to /tmp: {e2}")
+            raise
 
 def load_users():
     """Đọc dữ liệu user từ users.json"""
+    tmp_users_file = os.path.join('/tmp', config.USERS_FILE)
+    # If tmp users exists, prefer it
+    if os.path.exists(tmp_users_file):
+        try:
+            with open(tmp_users_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Lỗi đọc tmp users file: {e}")
+
     if os.path.exists(config.USERS_FILE):
         try:
             with open(config.USERS_FILE, 'r', encoding='utf-8') as f:
@@ -68,17 +109,39 @@ def load_users():
                 }
             ]
         }
-        save_users(default_users)
-        return default_users
+        try:
+            save_users(default_users)
+            return default_users
+        except Exception:
+            # fallback: save to tmp
+            try:
+                os.makedirs(os.path.dirname(tmp_users_file), exist_ok=True)
+                with open(tmp_users_file, 'w', encoding='utf-8') as f:
+                    json.dump(default_users, f, ensure_ascii=False, indent=2)
+                return default_users
+            except Exception as e:
+                print(f"Failed to create tmp users file: {e}")
+                return default_users
 
 def save_users(users_data):
     """Lưu dữ liệu user vào users.json"""
     try:
         with open(config.USERS_FILE, 'w', encoding='utf-8') as f:
             json.dump(users_data, f, ensure_ascii=False, indent=2)
+        return
     except Exception as e:
         print(f"Lỗi khi lưu users.json: {str(e)}")
-        raise
+        # fallback to /tmp
+        try:
+            tmp_path = os.path.join('/tmp', config.USERS_FILE)
+            os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
+            with open(tmp_path, 'w', encoding='utf-8') as f:
+                json.dump(users_data, f, ensure_ascii=False, indent=2)
+            print(f"Saved users.json to tmp: {tmp_path}")
+            return
+        except Exception as e2:
+            print(f"Failed to save users.json to /tmp: {e2}")
+            raise
 
 def hash_password(password):
     """Mã hóa mật khẩu bằng bcrypt (an toàn)"""

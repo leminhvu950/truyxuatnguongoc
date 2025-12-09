@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Truy xuất Nguồn gốc</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .admin-theme {
+            --admin-primary: #1976d2;
+            --admin-primary-dark: #1565c0;
+            --admin-primary-light: #42a5f5;
+            --admin-accent: #0d47a1;
+            --admin-bg: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        body.admin-theme {
+            background: var(--admin-bg);
+        }
+        .admin-navbar {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+            color: white;
+        }
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--admin-primary);
+        }
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid var(--admin-primary);
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--admin-primary);
+            margin: 0.5rem 0;
+        }
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        .admin-btn {
+            background: var(--admin-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .admin-btn:hover {
+            background: var(--admin-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .admin-btn-danger {
+            background: var(--danger-color);
+        }
+        .admin-btn-danger:hover {
+            background: var(--danger-dark);
+        }
+        .admin-btn-secondary {
+            background: #757575;
+        }
+        .admin-btn-secondary:hover {
+            background: #616161;
+        }
+        .farmers-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .farmers-table th {
+            background: var(--admin-primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .farmers-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .farmers-table tr:hover {
+            background: #f5f5f5;
+        }
+        .farmers-table tr:last-child td {
+            border-bottom: none;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+<body class="admin-theme">
+    <nav class="navbar admin-navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand" style="color: white;">👑 Admin Dashboard</a>
+            <div class="navbar-actions">
+                <span style="color: white; margin-right: 1rem;">👤 {{ admin.full_name }}</span>
+                <a href="{{ url_for('admin.manage_farmers') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">👥 Quản lý Farmers</a>
+                <a href="{{ url_for('admin.manage_products') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">📦 Quản lý Sản phẩm</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">🏠 Trang chủ</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">Đăng xuất</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: var(--admin-primary);">👑 Bảng điều khiển Admin</h1>
+            <p class="subtitle">Quản lý hệ thống và farmers</p>
+        </header>
+
+        <div class="admin-stats">
+            <div class="stat-card">
+                <div class="stat-label">Tổng số Farmers</div>
+                <div class="stat-number">{{ stats.total_farmers }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tổng số Sản phẩm</div>
+                <div class="stat-number">{{ stats.total_products }}</div>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <h2 style="color: var(--admin-primary); margin-bottom: 1.5rem;">📋 Danh sách Farmers gần đây</h2>
+            {% if farmers %}
+                <table class="farmers-table">
+                    <thead>
+                        <tr>
+                            <th>Tên đăng nhập</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for farmer in farmers[:10] %}
+                        <tr>
+                            <td><strong>{{ farmer.username }}</strong></td>
+                            <td>{{ farmer.full_name }}</td>
+                            <td>{{ farmer.email or 'Chưa có' }}</td>
+                            <td>{{ farmer.phone or 'Chưa có' }}</td>
+                            <td>{{ farmer.created_at or 'N/A' }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin.edit_farmer', username=farmer.username) }}" class="admin-btn admin-btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">✏️ Sửa</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if farmers|length > 10 %}
+                <div style="margin-top: 1rem; text-align: center;">
+                    <a href="{{ url_for('admin.manage_farmers') }}" class="admin-btn">Xem tất cả ({{ farmers|length }} farmers)</a>
+                </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                    <p>📭 Chưa có farmer nào trong hệ thống</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('admin.manage_farmers') }}" class="admin-btn">👥 Quản lý Farmers</a>
+            <a href="{{ url_for('admin.manage_products') }}" class="admin-btn">📦 Quản lý Sản phẩm</a>
+        </div>
+    </div>
+</body>
+</html>
+

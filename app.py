@@ -7,6 +7,7 @@ import utils
 from routes.main import main_bp
 from routes.auth import auth_bp
 from routes.products import products_bp
+from routes.admin import admin_bp
 import traceback
 import logging
 
@@ -22,6 +23,7 @@ csrf = CSRFProtect(app)
 app.register_blueprint(main_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(products_bp)
+app.register_blueprint(admin_bp)
 
 # Khởi tạo thư mục và dữ liệu sẽ thực hiện khi function được gọi (lazy init)
 def _initialize_app():

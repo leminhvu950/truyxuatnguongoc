@@ -13,6 +13,9 @@
             <div class="navbar-actions">
                 {% if user %}
                     <span style="color: var(--primary-color); font-weight: 600;">👤 {{ user.full_name }}</span>
+                    {% if user.role == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-small" style="background: #1976d2; color: white;">👑 Admin</a>
+                    {% endif %}
                     <a href="{{ url_for('products.manage') }}" class="btn btn-secondary btn-small">Quản lý</a>
                     <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small">Đăng xuất</a>
                 {% else %}

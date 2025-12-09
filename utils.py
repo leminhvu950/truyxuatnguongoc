@@ -78,7 +78,10 @@ def save_data(data):
 
 def load_users():
     """Đọc dữ liệu user từ users.json"""
-    tmp_users_file = os.path.join('/tmp', config.USERS_FILE)
+    import tempfile
+    tmp_dir = tempfile.gettempdir()
+    tmp_users_file = os.path.join(tmp_dir, os.path.basename(config.USERS_FILE))
+    
     # If tmp users exists, prefer it
     if os.path.exists(tmp_users_file):
         try:
@@ -93,10 +96,10 @@ def load_users():
                 return json.load(f)
         except json.JSONDecodeError as e:
             print(f"Lỗi đọc file users.json: {str(e)}")
-            return {}
+            return {'users': []}
         except Exception as e:
             print(f"Lỗi không xác định khi đọc users.json: {str(e)}")
-            return {}
+            return {'users': []}
     else:
         # Tạo file mới với admin user mặc định
         default_users = {
@@ -105,6 +108,7 @@ def load_users():
                     'username': 'admin',
                     'password': hash_password('admin123'),  # Mật khẩu: admin123
                     'full_name': 'Quản trị viên',
+                    'role': 'admin',
                     'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 }
             ]
@@ -125,22 +129,37 @@ def load_users():
 
 def save_users(users_data):
     """Lưu dữ liệu user vào users.json"""
+    import tempfile
+    
+    # Đảm bảo users_data có cấu trúc đúng
+    if not isinstance(users_data, dict) or 'users' not in users_data:
+        if isinstance(users_data, list):
+            users_data = {'users': users_data}
+        else:
+            users_data = {'users': []}
+    
+    # Thử lưu vào thư mục data trước
     try:
+        # Đảm bảo thư mục tồn tại
+        data_dir = os.path.dirname(config.USERS_FILE)
+        if data_dir:
+            os.makedirs(data_dir, exist_ok=True)
         with open(config.USERS_FILE, 'w', encoding='utf-8') as f:
             json.dump(users_data, f, ensure_ascii=False, indent=2)
         return
     except Exception as e:
         print(f"Lỗi khi lưu users.json: {str(e)}")
-        # fallback to /tmp
+        # fallback to temp directory (works on both Windows and Linux)
         try:
-            tmp_path = os.path.join('/tmp', config.USERS_FILE)
-            os.makedirs(os.path.dirname(tmp_path), exist_ok=True)
+            tmp_dir = tempfile.gettempdir()
+            tmp_path = os.path.join(tmp_dir, os.path.basename(config.USERS_FILE))
+            # tmp_path chỉ có tên file, không có thư mục con, nên không cần makedirs
             with open(tmp_path, 'w', encoding='utf-8') as f:
                 json.dump(users_data, f, ensure_ascii=False, indent=2)
             print(f"Saved users.json to tmp: {tmp_path}")
             return
         except Exception as e2:
-            print(f"Failed to save users.json to /tmp: {e2}")
+            print(f"Failed to save users.json to tmp: {e2}")
             raise
 
 def hash_password(password):
@@ -307,7 +326,27 @@ def get_user_info(session):
         if user.get('username') == session.get('user_id'):
             return {
                 'username': user.get('username'),
-                'full_name': user.get('full_name', user.get('username'))
+                'full_name': user.get('full_name', user.get('username')),
+                'role': user.get('role', 'farmer')
             }
     return None
+
+def is_admin(username):
+    """Kiểm tra user có phải admin không"""
+    users_data = load_users()
+    for user in users_data.get('users', []):
+        if user.get('username') == username:
+            return user.get('role') == 'admin'
+    return False
+
+def admin_required(f):
+    """Decorator để yêu cầu quyền admin"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('auth.login', next=request.url))
+        if not is_admin(session.get('user_id')):
+            return redirect(url_for('main.index')), 403
+        return f(*args, **kwargs)
+    return decorated_function
 

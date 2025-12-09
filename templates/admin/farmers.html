@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Farmers - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .admin-theme {
+            --admin-primary: #1976d2;
+            --admin-primary-dark: #1565c0;
+            --admin-primary-light: #42a5f5;
+            --admin-accent: #0d47a1;
+            --admin-bg: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        body.admin-theme {
+            background: var(--admin-bg);
+        }
+        .admin-navbar {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+            color: white;
+        }
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--admin-primary);
+        }
+        .admin-btn {
+            background: var(--admin-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .admin-btn:hover {
+            background: var(--admin-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .admin-btn-danger {
+            background: var(--danger-color);
+        }
+        .admin-btn-danger:hover {
+            background: var(--danger-dark);
+        }
+        .admin-btn-secondary {
+            background: #757575;
+        }
+        .admin-btn-secondary:hover {
+            background: #616161;
+        }
+        .farmers-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .farmers-table th {
+            background: var(--admin-primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        .farmers-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .farmers-table tr:hover {
+            background: #f5f5f5;
+        }
+        .farmers-table tr:last-child td {
+            border-bottom: none;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: #4caf50;
+            color: white;
+        }
+        .alert-error {
+            background: var(--danger-color);
+            color: white;
+        }
+    </style>
+</head>
+<body class="admin-theme">
+    <nav class="navbar admin-navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('admin.dashboard') }}" class="navbar-brand" style="color: white;">👑 Admin</a>
+            <div class="navbar-actions">
+                <span style="color: white; margin-right: 1rem;">👤 {{ admin.full_name }}</span>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">📊 Dashboard</a>
+                <a href="{{ url_for('admin.manage_products') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">📦 Sản phẩm</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">🏠 Trang chủ</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">Đăng xuất</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: var(--admin-primary);">👥 Quản lý Farmers</h1>
+            <p class="subtitle">Danh sách tất cả farmers trong hệ thống</p>
+        </header>
+
+        <div class="admin-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if farmers %}
+                <table class="farmers-table">
+                    <thead>
+                        <tr>
+                            <th>Tên đăng nhập</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
+                            <th>Ngày tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for farmer in farmers %}
+                        <tr>
+                            <td><strong>{{ farmer.username }}</strong></td>
+                            <td>{{ farmer.full_name }}</td>
+                            <td>{{ farmer.email or 'Chưa có' }}</td>
+                            <td>{{ farmer.phone or 'Chưa có' }}</td>
+                            <td>{{ farmer.address or 'Chưa có' }}</td>
+                            <td>{{ farmer.created_at or 'N/A' }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ url_for('admin.edit_farmer', username=farmer.username) }}" class="admin-btn admin-btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">✏️ Sửa</a>
+                                    <form method="POST" action="{{ url_for('admin.delete_farmer', username=farmer.username) }}" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa farmer {{ farmer.username }}?');">
+                                        <button type="submit" class="admin-btn admin-btn-danger" style="padding: 0.5rem 1rem; font-size: 0.85rem;">🗑️ Xóa</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-light);">
+                    <p>📭 Chưa có farmer nào trong hệ thống</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="{{ url_for('admin.dashboard') }}" class="admin-btn">← Quay lại Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
+

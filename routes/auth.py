@@ -24,6 +24,7 @@ def login():
                 # Đăng nhập thành công
                 session['user_id'] = username
                 session['user_name'] = user.get('full_name', username)
+                session['user_role'] = user.get('role', 'farmer')
 
                 # Chuyển đến trang được yêu cầu hoặc trang chủ
                 next_page = request.args.get('next')
@@ -89,6 +90,7 @@ def register():
         # Tự động đăng nhập sau khi đăng ký
         session['user_id'] = username
         session['user_name'] = full_name
+        session['user_role'] = 'farmer'  # Mặc định là farmer
 
         return redirect(url_for('main.index'))
 

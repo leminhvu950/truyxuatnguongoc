@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh sửa Farmer - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .admin-theme {
+            --admin-primary: #1976d2;
+            --admin-primary-dark: #1565c0;
+            --admin-primary-light: #42a5f5;
+            --admin-accent: #0d47a1;
+            --admin-bg: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        body.admin-theme {
+            background: var(--admin-bg);
+        }
+        .admin-navbar {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
+            color: white;
+        }
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--admin-primary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .admin-btn {
+            background: var(--admin-primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .admin-btn:hover {
+            background: var(--admin-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .admin-btn-secondary {
+            background: #757575;
+        }
+        .admin-btn-secondary:hover {
+            background: #616161;
+        }
+        .alert-error {
+            background: var(--danger-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="admin-theme">
+    <nav class="navbar admin-navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('admin.dashboard') }}" class="navbar-brand" style="color: white;">👑 Admin</a>
+            <div class="navbar-actions">
+                <span style="color: white; margin-right: 1rem;">👤 {{ admin.full_name }}</span>
+                <a href="{{ url_for('admin.manage_farmers') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">👥 Farmers</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">🏠 Trang chủ</a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">Đăng xuất</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="color: var(--admin-primary);">✏️ Chỉnh sửa Farmer</h1>
+            <p class="subtitle">Cập nhật thông tin farmer: {{ farmer.username }}</p>
+        </header>
+
+        <div class="admin-card">
+            {% if error %}
+            <div class="alert-error">
+                ⚠️ {{ error }}
+            </div>
+            {% endif %}
+
+            <form method="POST" class="product-form">
+                <div class="form-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        value="{{ farmer.username }}"
+                        class="form-input"
+                        disabled
+                    >
+                    <small style="color: var(--text-light);">Tên đăng nhập không thể thay đổi</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="full_name">Họ và tên <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="full_name" 
+                        name="full_name" 
+                        value="{{ farmer.full_name }}"
+                        required
+                        class="form-input"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone" 
+                        value="{{ farmer.phone or '' }}"
+                        placeholder="Ví dụ: 0901234567"
+                        class="form-input"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        value="{{ farmer.email or '' }}"
+                        placeholder="Ví dụ: farmer@gmail.com"
+                        class="form-input"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Địa chỉ</label>
+                    <textarea 
+                        id="address" 
+                        name="address" 
+                        rows="3" 
+                        placeholder="Ví dụ: Xã Sơn Cẩm Hà, Thành phố Đà Nẵng"
+                        class="form-input"
+                    >{{ farmer.address or '' }}</textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="admin-btn">
+                        ✅ Lưu thay đổi
+                    </button>
+                    <a href="{{ url_for('admin.manage_farmers') }}" class="admin-btn admin-btn-secondary">
+                        ← Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

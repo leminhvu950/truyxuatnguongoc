@@ -21,10 +21,31 @@ app.register_blueprint(main_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(products_bp)
 
-# Khởi tạo thư mục và dữ liệu
-utils.init_directories()
-utils.load_data()
-utils.load_users()
+# Khởi tạo thư mục và dữ liệu sẽ thực hiện khi function được gọi (lazy init)
+def _initialize_app():
+    try:
+        utils.init_directories()
+    except Exception as e:
+        print(f"Warning: failed to init directories: {e}")
+    try:
+        utils.load_data()
+    except Exception as e:
+        print(f"Warning: failed to load data: {e}")
+    try:
+        utils.load_users()
+    except Exception as e:
+        print(f"Warning: failed to load users: {e}")
+
+
+# Fallback for Flask versions without `before_first_request`: run init once on first request
+_initialized = False
+
+@app.before_request
+def _maybe_initialize():
+    global _initialized
+    if not _initialized:
+        _initialize_app()
+        _initialized = True
 
 
 if __name__ == '__main__':

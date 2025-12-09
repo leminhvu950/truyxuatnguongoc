@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from datetime import datetime
 import utils
+import traceback
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -77,7 +78,13 @@ def register():
         if 'users' not in users_data:
             users_data['users'] = []
         users_data['users'].append(new_user)
-        utils.save_users(users_data)
+        try:
+            utils.save_users(users_data)
+        except Exception as e:
+            # Log full traceback to stdout (visible in Vercel logs) and show friendly error
+            print('Error saving users during registration:')
+            traceback.print_exc()
+            return render_template('register.html', error='Lỗi nội bộ khi lưu tài khoản, vui lòng thử lại sau.')
 
         # Tự động đăng nhập sau khi đăng ký
         session['user_id'] = username

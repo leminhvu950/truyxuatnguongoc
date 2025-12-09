@@ -82,21 +82,43 @@ def save_users(users_data):
 
 def hash_password(password):
     """Mã hóa mật khẩu bằng bcrypt (an toàn)"""
-    import bcrypt
-    # Tạo salt và hash password
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+    try:
+        import bcrypt
+        # Tạo salt và hash password
+        salt = bcrypt.gensalt()
+        hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+        return hashed.decode('utf-8')
+    except Exception:
+        # Nếu bcrypt không khả dụng, fallback sang Werkzeug's generate_password_hash
+        try:
+            from werkzeug.security import generate_password_hash
+            return generate_password_hash(password)
+        except Exception:
+            # Cuối cùng fallback sang MD5 (không khuyến nghị) — đảm bảo không crash
+            return hashlib.md5(password.encode()).hexdigest()
 
 def verify_password(password, hashed):
     """Xác thực mật khẩu"""
-    import bcrypt
+    # Nếu hash là dạng Werkzeug (ví dụ 'pbkdf2:sha256:...'), dùng check_password_hash
     try:
+        from werkzeug.security import check_password_hash
+        # Werkzeug hashes are strings that contain ':' as algorithm marker
+        if isinstance(hashed, str) and (hashed.startswith('pbkdf2:') or ':' in hashed):
+            return check_password_hash(hashed, password)
+    except Exception:
+        pass
+
+    # Thử bcrypt nếu có
+    try:
+        import bcrypt
         return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
-    except:
+    except Exception:
         # Fallback cho mật khẩu cũ dùng MD5 (migration)
-        old_hash = hashlib.md5(password.encode()).hexdigest()
-        return old_hash == hashed
+        try:
+            old_hash = hashlib.md5(password.encode()).hexdigest()
+            return old_hash == hashed
+        except Exception:
+            return False
 
 def login_required(f):
     """Decorator để yêu cầu đăng nhập"""

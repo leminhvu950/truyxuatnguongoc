@@ -7,6 +7,8 @@ import utils
 from routes.main import main_bp
 from routes.auth import auth_bp
 from routes.products import products_bp
+import traceback
+import logging
 
 app = Flask(__name__)
 # Cấu hình ứng dụng
@@ -46,6 +48,28 @@ def _maybe_initialize():
     if not _initialized:
         _initialize_app()
         _initialized = True
+
+
+# Global exception handler to ensure traceback is printed to logs
+def _setup_global_error_logging(app):
+    # ensure logger prints to stdout
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
+
+    @app.errorhandler(Exception)
+    def _handle_unhandled_exception(e):
+        # log exception with stack trace
+        app.logger.exception('Unhandled exception: %s', e)
+        try:
+            traceback.print_exc()
+        except Exception:
+            pass
+        # Return generic error to user
+        return 'Internal Server Error', 500
+
+
+_setup_global_error_logging(app)
 
 
 if __name__ == '__main__':

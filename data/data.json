@@ -1,0 +1,24 @@
+{
+  "products": [
+    {
+      "id": "1764083666947",
+      "product_name": "lúa",
+      "farmer_name": "Nguyễn Thị Anh Thư",
+      "planting_date": "2026-01-01",
+      "harvest_date": "2026-03-31",
+      "production_area": "tiên hà",
+      "production_process": ".",
+      "harvest_process": "",
+      "storage_method": "",
+      "production_media": [],
+      "harvest_media": [],
+      "qr_code": "qrcodes/1764083666947.png",
+      "created_by": "anhthu",
+      "created_at": "2025-11-25 22:14:27",
+      "scan_count": 9,
+      "last_scan": "2025-11-29 21:27:31",
+      "plant_type": "seasonal",
+      "updated_at": "2025-11-29 20:14:34"
+    }
+  ]
+}

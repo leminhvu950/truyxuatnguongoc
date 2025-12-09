@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "0192023a7bbd73250516f069df18b500",
+      "full_name": "Quản trị viên",
+      "created_at": "2025-11-25 13:28:40"
+    },
+    {
+      "username": "anhthu",
+      "password": "e10adc3949ba59abbe56e057f20f883e",
+      "full_name": "Nguyễn Thị Anh Thư",
+      "phone": "0349656762",
+      "email": "t@gmail.com",
+      "address": "Xã Sơn Cẩm Hà Thành phố Đà Nẵng",
+      "created_at": "2025-11-25 21:53:01",
+      "updated_at": "2025-11-30 09:27:39"
+    }
+  ]
+}

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sửa sản phẩm - Truy xuất Nguồn gốc</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">🌱 Truy xuất Nguồn gốc</a>
+            <div class="navbar-actions">
+                {% if user %}
+                    <span style="color: var(--primary-color); font-weight: 600;">👤 {{ user.full_name }}</span>
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary btn-small">Thông tin</a>
+                    <a href="{{ url_for('products.manage') }}" class="btn btn-secondary btn-small">Quản lý</a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small">Đăng xuất</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-small">Đăng nhập</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-small">Đăng ký</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header>
+            <h1>✏️ Sửa sản phẩm</h1>
+            <p class="subtitle">Cập nhật thông tin sản phẩm</p>
+        </header>
+
+        <main>
+            <div class="form-container">
+                {% if error %}
+                <div class="alert alert-error">
+                    ⚠️ {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('products.edit_product', product_id=product.id) }}" class="product-form" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="form-group">
+                        <label for="product_name">Tên sản phẩm <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="product_name" 
+                            name="product_name" 
+                            required 
+                            value="{{ product.product_name }}"
+                            placeholder="Ví dụ: Lúa giống ST25"
+                            class="form-input"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="farmer_name">Hộ nông dân sản xuất <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="farmer_name" 
+                            name="farmer_name" 
+                            value="{{ product.farmer_name }}"
+                            readonly
+                            class="form-input"
+                            style="background-color: #f5f5f5; cursor: not-allowed;"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>🌿 Loại cây trồng</label>
+                        <div class="plant-type-selector">
+                            <label class="plant-type-option">
+                                <input 
+                                    type="radio" 
+                                    name="plant_type" 
+                                    value="seasonal" 
+                                    {{ 'checked' if not product.plant_type or product.plant_type == 'seasonal' else '' }}
+                                    onchange="updateDateLabels()"
+                                >
+                                <span class="plant-type-label">
+                                    <span class="plant-type-icon">🌾</span>
+                                    <span class="plant-type-text">Cây thời vụ</span>
+                                    <span class="plant-type-hint">Lúa, rau, ngô, đậu...</span>
+                                </span>
+                            </label>
+                            <label class="plant-type-option">
+                                <input 
+                                    type="radio" 
+                                    name="plant_type" 
+                                    value="perennial"
+                                    {{ 'checked' if product.plant_type == 'perennial' else '' }}
+                                    onchange="updateDateLabels()"
+                                >
+                                <span class="plant-type-label">
+                                    <span class="plant-type-icon">🌳</span>
+                                    <span class="plant-type-text">Cây lâu năm</span>
+                                    <span class="plant-type-hint">Cam, xoài, sầu riêng...</span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="planting_date" id="planting_date_label">{{ '🌸 Ngày ra hoa' if product.plant_type == 'perennial' else '🌱 Ngày trồng' }}</label>
+                            <input 
+                                type="date" 
+                                id="planting_date" 
+                                name="planting_date" 
+                                value="{{ product.planting_date or '' }}"
+                                class="form-input"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="harvest_date">✂️ Ngày thu hoạch</label>
+                            <input 
+                                type="date" 
+                                id="harvest_date" 
+                                name="harvest_date" 
+                                value="{{ product.harvest_date or '' }}"
+                                class="form-input"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="production_area">Khu vực sản xuất</label>
+                        <input 
+                            type="text" 
+                            id="production_area" 
+                            name="production_area" 
+                            value="{{ product.production_area or '' }}"
+                            placeholder="Ví dụ: Xã Sơn Cẩm Hà, Thành phố Đà Nẵng"
+                            class="form-input"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="production_process">Quy trình sản xuất</label>
+                        <textarea 
+                            id="production_process" 
+                            name="production_process" 
+                            rows="5" 
+                            placeholder="Mô tả quy trình sản xuất, chăm sóc..."
+                            class="form-input"
+                        >{{ product.production_process or '' }}</textarea>
+                    </div>
+
+                    {% if product.production_media %}
+                    <div class="form-group">
+                        <label>📸 Media quá trình sản xuất hiện có</label>
+                        <div class="media-preview">
+                            {% for media in product.production_media %}
+                                <div class="media-item">
+                                    {% if media.endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm')) %}
+                                        <video controls style="max-width: 200px; max-height: 150px; border-radius: 8px;">
+                                            <source src="{{ url_for('static', filename=media) }}" type="video/mp4">
+                                        </video>
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename=media) }}" alt="Production media" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover;">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="production_files">📸 Thêm Video/Hình ảnh quá trình sản xuất</label>
+                        <input 
+                            type="file" 
+                            id="production_files" 
+                            name="production_files" 
+                            multiple
+                            accept="image/*,video/*"
+                            class="form-input"
+                        >
+                        <small class="form-hint">Có thể chọn nhiều file. Hỗ trợ: JPG, PNG, GIF, MP4, MOV, AVI (tối đa 100MB/file)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="harvest_process">Quá trình thu hoạch</label>
+                        <textarea 
+                            id="harvest_process" 
+                            name="harvest_process" 
+                            rows="5" 
+                            placeholder="Mô tả quá trình thu hoạch, phương pháp thu hoạch, thời điểm thu hoạch..."
+                            class="form-input"
+                        >{{ product.harvest_process or '' }}</textarea>
+                    </div>
+
+                    {% if product.harvest_media %}
+                    <div class="form-group">
+                        <label>📸 Media quá trình thu hoạch hiện có</label>
+                        <div class="media-preview">
+                            {% for media in product.harvest_media %}
+                                <div class="media-item">
+                                    {% if media.endswith(('.mp4', '.mov', '.avi', '.mkv', '.webm')) %}
+                                        <video controls style="max-width: 200px; max-height: 150px; border-radius: 8px;">
+                                            <source src="{{ url_for('static', filename=media) }}" type="video/mp4">
+                                        </video>
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename=media) }}" alt="Harvest media" style="max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover;">
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="harvest_files">📸 Thêm Video/Hình ảnh quá trình thu hoạch</label>
+                        <input 
+                            type="file" 
+                            id="harvest_files" 
+                            name="harvest_files" 
+                            multiple
+                            accept="image/*,video/*"
+                            class="form-input"
+                        >
+                        <small class="form-hint">Có thể chọn nhiều file. Hỗ trợ: JPG, PNG, GIF, MP4, MOV, AVI (tối đa 100MB/file)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storage_method">Cách bảo quản</label>
+                        <textarea 
+                            id="storage_method" 
+                            name="storage_method" 
+                            rows="5" 
+                            placeholder="Mô tả cách bảo quản sản phẩm, nhiệt độ, độ ẩm, thời gian bảo quản..."
+                            class="form-input"
+                        >{{ product.storage_method or '' }}</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large">
+                            💾 Lưu thay đổi
+                        </button>
+                        <a href="{{ url_for('products.manage') }}" class="btn btn-secondary">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <footer>
+            <a href="{{ url_for('products.manage') }}" class="btn btn-link">← Quay lại quản lý sản phẩm</a>
+        </footer>
+    </div>
+
+    <script>
+        function updateDateLabels() {
+            const plantType = document.querySelector('input[name="plant_type"]:checked').value;
+            const plantingDateLabel = document.getElementById('planting_date_label');
+            
+            if (plantType === 'perennial') {
+                plantingDateLabel.innerHTML = '🌸 Ngày ra hoa';
+            } else {
+                plantingDateLabel.innerHTML = '🌱 Ngày trồng';
+            }
+        }
+    </script>
+</body>
+</html>
+

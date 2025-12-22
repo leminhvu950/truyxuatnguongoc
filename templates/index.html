@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Truy xuất Nguồn gốc Nông sản</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">🌱 Truy xuất Nguồn gốc</a>
+            <div class="navbar-actions">
+                {% if user %}
+                    <span class="user-name-mobile" style="color: var(--primary-color); font-weight: 600; display: block; width: 100%; text-align: center; margin-bottom: 0.5rem;">👤 {{ user.full_name }}</span>
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-secondary btn-small">Thông tin</a>
+                    <a href="{{ url_for('products.manage') }}" class="btn btn-secondary btn-small">Quản lý</a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small">Đăng xuất</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-small">Đăng nhập</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-small">Đăng ký</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <header>
+            <h1>🌱 Hệ thống Truy xuất Nguồn gốc Nông sản</h1>
+            <p class="subtitle">Quản lý và theo dõi nông sản một cách minh bạch</p>
+        </header>
+
+        <div class="actions">
+            {% if user %}
+                <a href="{{ url_for('products.create') }}" class="btn btn-primary">➕ Thêm sản phẩm mới</a>
+                <a href="{{ url_for('products.manage') }}" class="btn btn-secondary">📋 Quản lý sản phẩm của tôi</a>
+            {% else %}
+                <div class="login-prompt">
+                    <p>🔒 Vui lòng <a href="{{ url_for('auth.login') }}">đăng nhập</a> để thêm sản phẩm mới</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <main>
+            <h2>Danh sách sản phẩm</h2>
+            
+            <div class="search-container">
+                <form method="GET" action="{{ url_for('main.index') }}" class="search-form">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ search_query if search_query else '' }}"
+                        placeholder="🔍 Tìm kiếm theo tên sản phẩm, người sản xuất, khu vực..." 
+                        class="search-input"
+                    >
+                    <button type="submit" class="btn btn-primary" style="white-space: nowrap;">
+                        Tìm kiếm
+                    </button>
+                    {% if search_query %}
+                    <a href="{{ url_for('main.index') }}" class="btn btn-secondary" style="white-space: nowrap;">
+                        Xóa
+                    </a>
+                    {% endif %}
+                </form>
+                {% if search_query %}
+                <div class="search-results-info">
+                    Kết quả tìm kiếm cho: <strong>"{{ search_query }}"</strong>
+                    {% if products %}
+                        ({{ products|length }} sản phẩm)
+                    {% else %}
+                        (Không tìm thấy)
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if products %}
+                <div class="products-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        <div class="product-header">
+                            <h3>{{ product.product_name }}</h3>
+                            <span class="product-id">ID: {{ product.id }}</span>
+                        </div>
+                        <div class="product-info">
+                            <p><strong>Hộ sản xuất:</strong> {{ product.farmer_name }}</p>
+                            <p><strong>Khu vực:</strong> {{ product.production_area or 'Chưa cập nhật' }}</p>
+                            <p><strong>Ngày trồng:</strong> {{ product.planting_date or 'Chưa cập nhật' }}</p>
+                            <p><strong>Ngày thu hoạch:</strong> {{ product.harvest_date or 'Chưa cập nhật' }}</p>
+                        </div>
+                        <div class="product-actions">
+                            <a href="{{ url_for('products.product', product_id=product.id) }}" class="btn btn-view">Xem chi tiết</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>📦 Chưa có sản phẩm nào trong hệ thống</p>
+                    <p>Hãy bắt đầu bằng cách thêm sản phẩm mới!</p>
+                    {% if user %}
+                        <a href="{{ url_for('products.create') }}" class="btn btn-primary">Thêm sản phẩm đầu tiên</a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Đăng nhập để thêm sản phẩm</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Hệ thống Truy xuất Nguồn gốc Nông sản</p>
+        </footer>
+    </div>
+</body>
+</html>
+
+

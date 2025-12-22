@@ -71,6 +71,7 @@ def register():
             'phone': phone,
             'email': email,
             'address': address,
+            'role': 'farmer',  # Mặc định là farmer
             'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
 

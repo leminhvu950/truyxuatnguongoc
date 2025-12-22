@@ -7,6 +7,7 @@ import utils
 from routes.main import main_bp
 from routes.auth import auth_bp
 from routes.products import products_bp
+from routes.admin import admin_bp
 
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
@@ -18,6 +19,7 @@ csrf = CSRFProtect(app)
 app.register_blueprint(main_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(products_bp)
+app.register_blueprint(admin_bp)
 
 # Khởi tạo thư mục và dữ liệu
 utils.init_directories()

@@ -49,27 +49,61 @@ def load_users():
     if os.path.exists(config.USERS_FILE):
         try:
             with open(config.USERS_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Đảm bảo admin user tồn tại với role admin
+                ensure_admin_user(data)
+                return data
         except json.JSONDecodeError as e:
             print(f"Lỗi đọc file users.json: {str(e)}")
-            return {}
+            return create_default_users()
         except Exception as e:
             print(f"Lỗi không xác định khi đọc users.json: {str(e)}")
-            return {}
+            return create_default_users()
     else:
         # Tạo file mới với admin user mặc định
-        default_users = {
-            'users': [
-                {
-                    'username': 'admin',
-                    'password': hash_password('admin123'),  # Mật khẩu: admin123
-                    'full_name': 'Quản trị viên',
-                    'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                }
-            ]
+        return create_default_users()
+
+def create_default_users():
+    """Tạo users mặc định với admin"""
+    default_users = {
+        'users': [
+            {
+                'username': 'admin',
+                'password': hash_password('admin'),  # Mật khẩu: admin
+                'full_name': 'Quản trị viên',
+                'role': 'admin',
+                'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+        ]
+    }
+    save_users(default_users)
+    return default_users
+
+def ensure_admin_user(users_data):
+    """Đảm bảo admin user tồn tại và có role admin"""
+    users = users_data.get('users', [])
+    admin_exists = False
+    
+    for user in users:
+        if user.get('username') == 'admin':
+            # Cập nhật role nếu chưa có
+            if 'role' not in user:
+                user['role'] = 'admin'
+            admin_exists = True
+            break
+    
+    if not admin_exists:
+        # Tạo admin user mới
+        admin_user = {
+            'username': 'admin',
+            'password': hash_password('admin'),
+            'full_name': 'Quản trị viên',
+            'role': 'admin',
+            'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        save_users(default_users)
-        return default_users
+        users.append(admin_user)
+        users_data['users'] = users
+        save_users(users_data)
 
 def save_users(users_data):
     """Lưu dữ liệu user vào users.json"""
@@ -222,7 +256,8 @@ def get_user_info(session):
         if user.get('username') == session.get('user_id'):
             return {
                 'username': user.get('username'),
-                'full_name': user.get('full_name', user.get('username'))
+                'full_name': user.get('full_name', user.get('username')),
+                'role': user.get('role', 'farmer')
             }
     return None
 

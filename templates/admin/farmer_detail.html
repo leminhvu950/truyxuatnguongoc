@@ -1,0 +1,279 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Chi tiết Farmer{% endblock %}
+{% block page_title %}Chi tiết Farmer: {{ farmer.full_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Farmer Info -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>
+                    Thông tin Farmer
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <img src="https://via.placeholder.com/100" class="rounded-circle mb-2" alt="Avatar">
+                    <h5>{{ farmer.full_name }}</h5>
+                    <p class="text-muted">@{{ farmer.username }}</p>
+                    <span class="badge bg-{{ 'success' if farmer.get('status', 'active') == 'active' else 'danger' }}">
+                        {{ 'Hoạt động' if farmer.get('status', 'active') == 'active' else 'Vô hiệu hóa' }}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <strong>Liên hệ:</strong>
+                    <div class="mt-2">
+                        {% if farmer.phone %}
+                            <p class="mb-1">
+                                <i class="fas fa-phone me-2"></i>{{ farmer.phone }}
+                            </p>
+                        {% endif %}
+                        {% if farmer.email %}
+                            <p class="mb-1">
+                                <i class="fas fa-envelope me-2"></i>{{ farmer.email }}
+                            </p>
+                        {% endif %}
+                        {% if farmer.address %}
+                            <p class="mb-1">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ farmer.address }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Thống kê:</strong>
+                    <div class="mt-2">
+                        <p class="mb-1">
+                            <i class="fas fa-box me-2"></i>{{ products|length }} sản phẩm
+                        </p>
+                        <p class="mb-1">
+                            <i class="fas fa-qrcode me-2"></i>{{ products|sum(attribute='scan_count') or 0 }} lượt quét
+                        </p>
+                        <p class="mb-1">
+                            <i class="fas fa-calendar me-2"></i>Tham gia: {{ farmer.created_at }}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-warning toggle-status-btn" 
+                            data-username="{{ farmer.username }}">
+                        <i class="fas fa-{{ 'ban' if farmer.get('status', 'active') == 'active' else 'check' }} me-2"></i>
+                        {{ 'Vô hiệu hóa' if farmer.get('status', 'active') == 'active' else 'Kích hoạt' }}
+                    </button>
+                    <button class="btn btn-outline-danger delete-farmer-btn" 
+                            data-username="{{ farmer.username }}"
+                            data-name="{{ farmer.full_name }}">
+                        <i class="fas fa-trash me-2"></i>
+                        Xóa Farmer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-box me-2"></i>
+                    Sản phẩm của {{ farmer.full_name }} ({{ products|length }})
+                </h5>
+                {% if products %}
+                    <input type="text" id="searchProduct" class="form-control w-auto" placeholder="Tìm kiếm...">
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Khu vực</th>
+                                    <th>Ngày tạo</th>
+                                    <th>Lượt quét</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <strong>{{ product.product_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">
+                                                ID: {{ product.id }}
+                                                {% if product.plant_type %}
+                                                    | {{ 'Cây thời vụ' if product.plant_type == 'seasonal' else 'Cây lâu năm' }}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>{{ product.production_area or 'N/A' }}</td>
+                                    <td>
+                                        <small>{{ product.created_at }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ product.scan_count or 0 }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('products.product', product_id=product.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" target="_blank" title="Xem sản phẩm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger delete-product-btn" 
+                                                    data-id="{{ product.id }}"
+                                                    data-name="{{ product.product_name }}"
+                                                    title="Xóa sản phẩm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box fa-2x text-muted mb-3"></i>
+                        <h6 class="text-muted">Farmer này chưa tạo sản phẩm nào</h6>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modals -->
+<div class="modal fade" id="deleteFarmerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa Farmer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa farmer <strong id="farmerName"></strong>?</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Cảnh báo:</strong> Thao tác này sẽ xóa tất cả {{ products|length }} sản phẩm của farmer và không thể hoàn tác!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteFarmer">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa sản phẩm <strong id="productName"></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteProduct">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Search functionality
+    $('#searchProduct').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('#productsTable tbody tr').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // Delete farmer
+    let farmerToDelete = '';
+    $('.delete-farmer-btn').click(function() {
+        farmerToDelete = $(this).data('username');
+        $('#farmerName').text($(this).data('name'));
+        $('#deleteFarmerModal').modal('show');
+    });
+
+    $('#confirmDeleteFarmer').click(function() {
+        if (farmerToDelete) {
+            $.post(`/admin/delete_farmer/${farmerToDelete}`)
+                .done(function(response) {
+                    if (response.success) {
+                        window.location.href = '/admin/farmers';
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Có lỗi xảy ra khi xóa farmer');
+                });
+        }
+        $('#deleteFarmerModal').modal('hide');
+    });
+
+    // Delete product
+    let productToDelete = '';
+    $('.delete-product-btn').click(function() {
+        productToDelete = $(this).data('id');
+        $('#productName').text($(this).data('name'));
+        $('#deleteProductModal').modal('show');
+    });
+
+    $('#confirmDeleteProduct').click(function() {
+        if (productToDelete) {
+            $.post(`/admin/delete_product/${productToDelete}`)
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Có lỗi xảy ra khi xóa sản phẩm');
+                });
+        }
+        $('#deleteProductModal').modal('hide');
+    });
+
+    // Toggle status
+    $('.toggle-status-btn').click(function() {
+        const username = $(this).data('username');
+        $.post(`/admin/toggle_farmer_status/${username}`)
+            .done(function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            })
+            .fail(function() {
+                alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            });
+    });
+});
+</script>
+{% endblock %}

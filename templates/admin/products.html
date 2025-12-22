@@ -1,0 +1,154 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Quản lý Sản phẩm{% endblock %}
+{% block page_title %}Quản lý Sản phẩm{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-box me-2"></i>
+            Tất cả sản phẩm ({{ products|length }})
+        </h5>
+        <div>
+            <input type="text" id="searchProduct" class="form-control" placeholder="Tìm kiếm sản phẩm...">
+        </div>
+    </div>
+    <div class="card-body">
+        {% if products %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Farmer</th>
+                            <th>Khu vực</th>
+                            <th>Ngày tạo</th>
+                            <th>Lượt quét</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>{{ product.product_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        ID: {{ product.id }}
+                                        {% if product.plant_type %}
+                                            | {{ 'Cây thời vụ' if product.plant_type == 'seasonal' else 'Cây lâu năm' }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ product.farmer_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">@{{ product.created_by }}</small>
+                                </div>
+                            </td>
+                            <td>{{ product.production_area or 'N/A' }}</td>
+                            <td>
+                                <small>{{ product.created_at }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ product.scan_count or 0 }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('products.product', product_id=product.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" target="_blank" title="Xem sản phẩm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.farmer_detail', username=product.created_by) }}" 
+                                       class="btn btn-sm btn-outline-info" title="Xem farmer">
+                                        <i class="fas fa-user"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-danger delete-product-btn" 
+                                            data-id="{{ product.id }}"
+                                            data-name="{{ product.product_name }}"
+                                            title="Xóa sản phẩm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Chưa có sản phẩm nào</h5>
+                <p class="text-muted">Sản phẩm sẽ xuất hiện ở đây khi farmers tạo</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa sản phẩm <strong id="productName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Cảnh báo:</strong> Thao tác này sẽ xóa tất cả dữ liệu và file của sản phẩm!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Search functionality
+    $('#searchProduct').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $('#productsTable tbody tr').filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+    });
+
+    // Delete product
+    let productToDelete = '';
+    $('.delete-product-btn').click(function() {
+        productToDelete = $(this).data('id');
+        $('#productName').text($(this).data('name'));
+        $('#deleteModal').modal('show');
+    });
+
+    $('#confirmDelete').click(function() {
+        if (productToDelete) {
+            $.post(`/admin/delete_product/${productToDelete}`)
+                .done(function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + response.message);
+                    }
+                })
+                .fail(function() {
+                    alert('Có lỗi xảy ra khi xóa sản phẩm');
+                });
+        }
+        $('#deleteModal').modal('hide');
+    });
+});
+</script>
+{% endblock %}

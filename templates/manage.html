@@ -56,7 +56,7 @@
                         <div class="product-actions">
                             <a href="{{ url_for('products.product', product_id=product.id) }}" class="btn btn-view">Xem chi tiết</a>
                             <a href="{{ url_for('products.ai_analysis_enhanced', product_id=product.id) }}" class="btn btn-info">🤖 AI Analysis</a>
-                            <a href="{{ url_for('products.edit', product_id=product.id) }}" class="btn btn-secondary">✏️ Sửa</a>
+                            <a href="{{ url_for('products.edit_product', product_id=product.id) }}" class="btn btn-secondary">✏️ Sửa</a>
                             <a href="{{ url_for('products.delete_product', product_id=product.id) }}" 
                                class="btn btn-danger" 
                                onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">🗑️ Xóa</a>

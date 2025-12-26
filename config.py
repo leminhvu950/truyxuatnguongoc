@@ -19,3 +19,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-change-in-production-0deab411
 WTF_CSRF_ENABLED = True
 WTF_CSRF_TIME_LIMIT = 3600  # 1 giờ
 
+# OpenAI Configuration
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo')
+OPENAI_MAX_TOKENS = int(os.environ.get('OPENAI_MAX_TOKENS', '2000'))
+OPENAI_TEMPERATURE = float(os.environ.get('OPENAI_TEMPERATURE', '0.7'))
+

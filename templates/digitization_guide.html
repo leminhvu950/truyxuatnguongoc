@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn Tiêu chuẩn Số hóa Nông sản</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .guide-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+        .guide-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .standard-level {
+            border-left: 5px solid #28a745;
+            padding: 20px;
+            margin: 15px 0;
+            background: #f8f9fa;
+            border-radius: 0 10px 10px 0;
+        }
+        .standard-level.basic {
+            border-left-color: #ffc107;
+        }
+        .standard-level.advanced {
+            border-left-color: #17a2b8;
+        }
+        .standard-level.expert {
+            border-left-color: #6f42c1;
+        }
+        .checklist-item {
+            padding: 10px 15px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .checklist-item:hover {
+            background: #f8f9ff;
+            border-color: #667eea;
+        }
+        .benefit-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            height: 100%;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">🌱 Truy xuất Nguồn gốc</a>
+            <div class="navbar-actions">
+                {% if user %}
+                    <a href="{{ url_for('products.manage') }}" class="btn btn-secondary btn-small">Quản lý</a>
+                    {% if user.role == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-small">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small">Đăng xuất</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="guide-header">
+            <h1><i class="fas fa-digital-tachograph"></i> Hướng dẫn Tiêu chuẩn Số hóa Nông sản</h1>
+            <p class="lead">Nâng cao chất lượng và giá trị sản phẩm thông qua số hóa</p>
+        </div>
+
+        <!-- Tại sao cần số hóa -->
+        <div class="guide-section">
+            <h2><i class="fas fa-question-circle text-primary"></i> Tại sao cần số hóa nông sản?</h2>
+            <div class="row mt-4">
+                <div class="col-md-4 mb-3">
+                    <div class="benefit-card">
+                        <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                        <h5>Tăng độ tin cậy</h5>
+                        <p>Người tiêu dùng tin tưởng hơn với sản phẩm có truy xuất nguồn gốc rõ ràng</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="benefit-card">
+                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                        <h5>Tăng giá trị</h5>
+                        <p>Sản phẩm số hóa có giá cao hơn 15-30% so với sản phẩm thông thường</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="benefit-card">
+                        <i class="fas fa-globe fa-3x mb-3"></i>
+                        <h5>Mở rộng thị trường</h5>
+                        <p>Dễ dàng tiếp cận thị trường xuất khẩu và khách hàng cao cấp</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Các cấp độ tiêu chuẩn -->
+        <div class="guide-section">
+            <h2><i class="fas fa-layer-group text-primary"></i> Các cấp độ tiêu chuẩn số hóa</h2>
+            
+            <div class="standard-level basic">
+                <h4><i class="fas fa-star text-warning"></i> Cấp độ Cơ bản (40-60 điểm)</h4>
+                <p><strong>Yêu cầu tối thiểu:</strong></p>
+                <ul>
+                    <li>Thông tin sản phẩm đầy đủ (tên, loại, nguồn gốc)</li>
+                    <li>Thông tin người sản xuất</li>
+                    <li>Ngày trồng và thu hoạch</li>
+                    <li>Mô tả quy trình sản xuất cơ bản</li>
+                </ul>
+            </div>
+
+            <div class="standard-level advanced">
+                <h4><i class="fas fa-star text-info"></i> Cấp độ Nâng cao (60-80 điểm)</h4>
+                <p><strong>Bổ sung thêm:</strong></p>
+                <ul>
+                    <li>Quy trình sản xuất chi tiết</li>
+                    <li>Hình ảnh/video quá trình sản xuất</li>
+                    <li>Phương pháp bảo quản</li>
+                    <li>Thông tin phân bón, thuốc bảo vệ thực vật</li>
+                </ul>
+            </div>
+
+            <div class="standard-level expert">
+                <h4><i class="fas fa-star text-purple"></i> Cấp độ Chuyên nghiệp (80-100 điểm)</h4>
+                <p><strong>Tiêu chuẩn cao nhất:</strong></p>
+                <ul>
+                    <li>Đầy đủ media files (hình ảnh + video)</li>
+                    <li>Quy trình chi tiết từng giai đoạn</li>
+                    <li>Chứng nhận chất lượng</li>
+                    <li>Thông tin dinh dưỡng và an toàn</li>
+                    <li>Liên kết với hệ thống IoT (nếu có)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Quy trình thực hiện -->
+        <div class="guide-section">
+            <h2><i class="fas fa-tasks text-primary"></i> Quy trình thực hiện số hóa</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Giai đoạn 1: Chuẩn bị (Tuần 1-2)</h4>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h6>Thu thập thông tin cơ bản</h6>
+                            <p>Chuẩn bị đầy đủ thông tin về sản phẩm, quy trình sản xuất</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h6>Chụp ảnh/quay video</h6>
+                            <p>Ghi lại các giai đoạn quan trọng trong quy trình</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h6>Tạo hồ sơ sản phẩm</h6>
+                            <p>Nhập thông tin vào hệ thống truy xuất nguồn gốc</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h4>Giai đoạn 2: Hoàn thiện (Tuần 3-4)</h4>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="step-number">4</div>
+                        <div>
+                            <h6>Kiểm tra và bổ sung</h6>
+                            <p>Rà soát lại thông tin, bổ sung phần còn thiếu</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="step-number">5</div>
+                        <div>
+                            <h6>Tạo mã QR</h6>
+                            <p>Tạo và in mã QR để dán lên sản phẩm</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="step-number">6</div>
+                        <div>
+                            <h6>Quảng bá và theo dõi</h6>
+                            <p>Chia sẻ thông tin, theo dõi lượt quét QR</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checklist đánh giá -->
+        <div class="guide-section">
+            <h2><i class="fas fa-clipboard-check text-primary"></i> Checklist tự đánh giá</h2>
+            <p>Kiểm tra sản phẩm của bạn đã đạt những tiêu chí nào:</p>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Thông tin cơ bản (40 điểm)</h5>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-success"></i> Tên sản phẩm rõ ràng
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-success"></i> Thông tin người sản xuất
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-success"></i> Khu vực sản xuất
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-success"></i> Ngày trồng/thu hoạch
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Thông tin nâng cao (60 điểm)</h5>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-warning"></i> Quy trình sản xuất chi tiết
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-warning"></i> Hình ảnh sản xuất
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-warning"></i> Video quá trình
+                    </div>
+                    <div class="checklist-item">
+                        <i class="fas fa-square-check text-warning"></i> Phương pháp bảo quản
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lợi ích kinh tế -->
+        <div class="guide-section">
+            <h2><i class="fas fa-coins text-primary"></i> Lợi ích kinh tế</h2>
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    <div class="display-4 text-success">+25%</div>
+                    <h5>Tăng giá bán</h5>
+                    <p>Sản phẩm có truy xuất nguồn gốc</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="display-4 text-info">+40%</div>
+                    <h5>Tăng khách hàng</h5>
+                    <p>Người tiêu dùng tin tưởng hơn</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="display-4 text-warning">+60%</div>
+                    <h5>Cơ hội xuất khẩu</h5>
+                    <p>Đáp ứng tiêu chuẩn quốc tế</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hỗ trợ và liên hệ -->
+        <div class="guide-section">
+            <h2><i class="fas fa-headset text-primary"></i> Hỗ trợ và tư vấn</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Cần hỗ trợ?</h5>
+                    <p>Đội ngũ chuyên gia của chúng tôi sẵn sàng hỗ trợ bạn:</p>
+                    <ul>
+                        <li>Tư vấn quy trình số hóa</li>
+                        <li>Hướng dẫn sử dụng hệ thống</li>
+                        <li>Đào tạo kỹ năng số hóa</li>
+                        <li>Hỗ trợ kỹ thuật 24/7</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Liên hệ</h5>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-phone text-primary me-3"></i>
+                        <span>Hotline: 1900-xxxx</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-envelope text-primary me-3"></i>
+                        <span>Email: support@truyxuat.vn</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fab fa-facebook text-primary me-3"></i>
+                        <span>Facebook: /truyxuatnguongoc</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="text-center mt-5">
+            <a href="{{ url_for('products.create') }}" class="btn btn-success btn-lg me-3">
+                <i class="fas fa-plus"></i> Tạo sản phẩm mới
+            </a>
+            <a href="{{ url_for('products.manage') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-list"></i> Quản lý sản phẩm
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

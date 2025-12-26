@@ -1,9 +1,10 @@
 """Routes cho quản lý sản phẩm"""
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from datetime import datetime
 import time
 import utils
 import ai_analysis
+import ai_enhanced
 
 products_bp = Blueprint('products', __name__)
 
@@ -296,3 +297,87 @@ def ai_report(product_id):
 
     return render_template('ai_report.html', product=product, analysis=analysis, user=user_info)
 
+
+@products_bp.route('/ai-analysis/<product_id>')
+@utils.login_required
+def ai_analysis_enhanced(product_id):
+    """Trang phân tích AI nâng cao với OpenAI"""
+    data = utils.load_data()
+    product = next((p for p in data.get('products', []) if p['id'] == product_id), None)
+    
+    if not product:
+        return redirect(url_for('main.index'))
+    
+    # Kiểm tra quyền truy cập (chỉ người tạo hoặc admin)
+    current_user = session.get('user')
+    users_data = utils.load_users()
+    user_info = next((u for u in users_data['users'] if u['username'] == current_user), None)
+    
+    if (product.get('farmer_name') != session.get('user_name') and 
+        user_info.get('role') != 'admin'):
+        return redirect(url_for('main.index'))
+    
+    # Phân tích với OpenAI
+    analysis = ai_enhanced.analyze_product_with_openai(product)
+    
+    # Lấy gợi ý tiêu chuẩn số hóa
+    standards_suggestions = ai_enhanced.get_digitization_standards_suggestions(product)
+    
+    # Phân tích thị trường
+    market_analysis = ai_enhanced.get_market_analysis(product)
+    
+    # Kế hoạch cải thiện
+    improvement_plan = ai_enhanced.generate_improvement_plan(product, analysis)
+    
+    user_info = utils.get_user_info(session)
+    
+    return render_template('ai_analysis_enhanced.html', 
+                         product=product, 
+                         analysis=analysis,
+                         standards_suggestions=standards_suggestions,
+                         market_analysis=market_analysis,
+                         improvement_plan=improvement_plan,
+                         user=user_info)
+
+@products_bp.route('/api/ai-suggestions/<product_id>')
+@utils.login_required
+def api_ai_suggestions(product_id):
+    """API endpoint để lấy gợi ý AI theo thời gian thực"""
+    data = utils.load_data()
+    product = next((p for p in data.get('products', []) if p['id'] == product_id), None)
+    
+    if not product:
+        return jsonify({'error': 'Không tìm thấy sản phẩm'}), 404
+    
+    # Kiểm tra quyền truy cập
+    current_user = session.get('user')
+    users_data = utils.load_users()
+    user_info = next((u for u in users_data['users'] if u['username'] == current_user), None)
+    
+    if (product.get('farmer_name') != session.get('user_name') and 
+        user_info.get('role') != 'admin'):
+        return jsonify({'error': 'Không có quyền truy cập'}), 403
+    
+    suggestion_type = request.args.get('type', 'general')
+    
+    try:
+        if suggestion_type == 'standards':
+            result = ai_enhanced.get_digitization_standards_suggestions(product)
+        elif suggestion_type == 'market':
+            result = ai_enhanced.get_market_analysis(product)
+        elif suggestion_type == 'improvement':
+            basic_analysis = ai_analysis.analyze_product_ai(product)
+            result = ai_enhanced.generate_improvement_plan(product, basic_analysis)
+        else:
+            result = ai_enhanced.analyze_product_with_openai(product)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@products_bp.route('/digitization-guide')
+@utils.login_required
+def digitization_guide():
+    """Trang hướng dẫn tiêu chuẩn số hóa"""
+    user_info = utils.get_user_info(session)
+    return render_template('digitization_guide.html', user=user_info)

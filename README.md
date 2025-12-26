@@ -8,8 +8,10 @@
 - ✅ Tạo và quản lý sản phẩm nông sản
 - ✅ Tạo mã QR cho từng sản phẩm
 - ✅ Upload hình ảnh/video sản xuất và thu hoạch
-- ✅ Phân tích AI cho báo cáo sản phẩm
+- ✅ Phân tích AI cơ bản cho báo cáo sản phẩm
+- ✅ **AI nâng cao với OpenAI** - Phân tích chi tiết và gợi ý tiêu chuẩn số hóa
 - ✅ **Admin Panel** - Quản lý người dùng và hệ thống
+- ✅ **Hướng dẫn tiêu chuẩn số hóa** - Tài liệu chi tiết
 - ✅ Responsive design
 
 ## Admin Panel
@@ -26,6 +28,34 @@
 - **Password:** `admin123`
 
 > ⚠️ **Quan trọng:** Hãy đổi mật khẩu admin ngay sau khi deploy!
+
+## AI nâng cao với OpenAI
+
+### Tính năng AI:
+- 🧠 **Phân tích sản phẩm chi tiết** - Đánh giá chất lượng thông tin và gợi ý cải thiện
+- 📊 **Gợi ý tiêu chuẩn số hóa** - Hướng dẫn cụ thể để đạt tiêu chuẩn cao
+- 📈 **Phân tích thị trường** - Dự đoán giá cả, xu hướng và cơ hội kinh doanh
+- 📋 **Kế hoạch cải thiện** - Lộ trình cụ thể để nâng cao chất lượng sản phẩm
+- 🎯 **Tư vấn marketing** - Chiến lược quảng bá và xây dựng thương hiệu
+
+### Cấu hình OpenAI:
+1. **Lấy API Key:**
+   - Truy cập [platform.openai.com](https://platform.openai.com)
+   - Tạo API key mới
+   
+2. **Cấu hình:**
+   ```bash
+   # Trong file .env hoặc biến môi trường
+   OPENAI_API_KEY=sk-your-api-key-here
+   OPENAI_MODEL=gpt-3.5-turbo  # hoặc gpt-4
+   ```
+
+3. **Sử dụng:**
+   - Truy cập trang sản phẩm
+   - Click "🤖 AI Analysis" để xem phân tích nâng cao
+   - Xem gợi ý tiêu chuẩn số hóa và kế hoạch cải thiện
+
+> **Lưu ý:** Tính năng AI nâng cao là tùy chọn. Nếu không cấu hình OpenAI API, hệ thống sẽ sử dụng phân tích AI cơ bản.
 
 ## Deploy lên Railway
 
@@ -56,6 +86,7 @@ pip install -r requirements.txt
    ```
    SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
    FLASK_ENV=production
+   OPENAI_API_KEY=sk-your-openai-api-key-here (Tùy chọn - cho tính năng AI nâng cao)
    ```
 
 4. **Deploy:**

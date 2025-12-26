@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân tích AI nâng cao - {{ product.product_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .ai-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        .ai-content {
+            background: white;
+            color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+        .standards-item {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .standards-item.missing {
+            border-left-color: #dc3545;
+        }
+        .standards-item.partial {
+            border-left-color: #ffc107;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .enhancement-badge {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .ai-unavailable {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">🌱 Truy xuất Nguồn gốc</a>
+            <div class="navbar-actions">
+                {% if user %}
+                    <a href="{{ url_for('products.manage') }}" class="btn btn-secondary btn-small">Quản lý</a>
+                    {% if user.role == 'admin' %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-small">Admin</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary btn-small">Đăng xuất</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-robot text-primary"></i> Phân tích AI nâng cao</h2>
+                        <p class="text-muted">Sản phẩm: <strong>{{ product.product_name }}</strong></p>
+                    </div>
+                    <div>
+                        {% if analysis.ai_enhanced %}
+                            <span class="enhancement-badge">
+                                <i class="fas fa-brain"></i> AI Enhanced
+                            </span>
+                        {% endif %}
+                        <a href="{{ url_for('products.product', product_id=product.id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phân tích cơ bản -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="display-4 text-primary">{{ analysis.score }}</div>
+                        <h5>Điểm minh bạch</h5>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ analysis.score }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="display-4 text-success">{{ analysis.standards_compliance.compliance_score }}</div>
+                        <h5>Tuân thủ tiêu chuẩn</h5>
+                        <p class="text-muted">{{ analysis.standards_compliance.compliance_level }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="display-4 text-info">{{ analysis.stats.production_media_count + analysis.stats.harvest_media_count }}</div>
+                        <h5>Media files</h5>
+                        <p class="text-muted">Hình ảnh & Video</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phân tích OpenAI -->
+        {% if analysis.ai_enhanced %}
+        <div class="ai-section">
+            <h3><i class="fas fa-brain"></i> Phân tích AI chi tiết</h3>
+            <p>Được tạo bởi OpenAI GPT vào {{ analysis.openai_timestamp }}</p>
+            <div class="ai-content">
+                {{ analysis.openai_suggestions | replace('\n', '<br>') | safe }}
+            </div>
+        </div>
+        {% elif analysis.get('openai_error') %}
+        <div class="ai-unavailable">
+            <h5><i class="fas fa-exclamation-triangle"></i> Lỗi AI Analysis</h5>
+            <p>Không thể kết nối với OpenAI: {{ analysis.openai_error }}</p>
+            <p>Hiển thị phân tích cơ bản thay thế.</p>
+        </div>
+        {% else %}
+        <div class="ai-unavailable">
+            <h5><i class="fas fa-info-circle"></i> AI Analysis không khả dụng</h5>
+            <p>Cần cấu hình OPENAI_API_KEY để sử dụng tính năng phân tích AI nâng cao.</p>
+            <p>Hiển thị phân tích cơ bản thay thế.</p>
+        </div>
+        {% endif %}
+
+        <!-- Gợi ý tiêu chuẩn số hóa -->
+        <div class="ai-section">
+            <h3><i class="fas fa-clipboard-check"></i> Tiêu chuẩn số hóa</h3>
+            {% if standards_suggestions.available %}
+                <div class="ai-content">
+                    {% if standards_suggestions.suggestions.mandatory_standards %}
+                        <h5>Tiêu chuẩn bắt buộc:</h5>
+                        {% for standard in standards_suggestions.suggestions.mandatory_standards %}
+                        <div class="standards-item {{ standard.status }}">
+                            <h6>{{ standard.name }}</h6>
+                            <p>{{ standard.description }}</p>
+                            <span class="badge bg-{{ 'success' if standard.status == 'complete' else 'warning' if standard.status == 'partial' else 'danger' }}">
+                                {{ 'Hoàn thành' if standard.status == 'complete' else 'Một phần' if standard.status == 'partial' else 'Thiếu' }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if standards_suggestions.suggestions.advanced_standards %}
+                        <h5 class="mt-4">Tiêu chuẩn nâng cao:</h5>
+                        {% for standard in standards_suggestions.suggestions.advanced_standards %}
+                        <div class="standards-item">
+                            <h6>{{ standard.name }}</h6>
+                            <p>{{ standard.description }}</p>
+                            <small class="text-muted"><strong>Lợi ích:</strong> {{ standard.benefit }}</small>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if standards_suggestions.suggestions.raw_response %}
+                        {{ standards_suggestions.suggestions.raw_response | replace('\n', '<br>') | safe }}
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="ai-content">
+                    <p>Gợi ý tiêu chuẩn số hóa không khả dụng. Cần cấu hình OpenAI API.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Phân tích thị trường -->
+        <div class="ai-section">
+            <h3><i class="fas fa-chart-line"></i> Phân tích thị trường</h3>
+            {% if market_analysis.available %}
+                <div class="ai-content">
+                    {{ market_analysis.analysis | replace('\n', '<br>') | safe }}
+                </div>
+            {% else %}
+                <div class="ai-content">
+                    <h5>Gợi ý thị trường cơ bản:</h5>
+                    {% for suggestion in analysis.market_suggestions %}
+                    <div class="mb-3">
+                        <h6>{{ suggestion.type }}</h6>
+                        <p>{{ suggestion.suggestion }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Kế hoạch cải thiện -->
+        <div class="ai-section">
+            <h3><i class="fas fa-tasks"></i> Kế hoạch cải thiện</h3>
+            {% if improvement_plan.available %}
+                <div class="ai-content">
+                    {{ improvement_plan.plan | replace('\n', '<br>') | safe }}
+                </div>
+            {% else %}
+                <div class="ai-content">
+                    <h5>Gợi ý cải thiện cơ bản:</h5>
+                    <ul>
+                        {% for rec in analysis.recommendations %}
+                        <li>{{ rec }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{{ url_for('products.digitization_guide') }}" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-book"></i> Hướng dẫn số hóa
+                </a>
+                <a href="{{ url_for('products.edit', product_id=product.id) }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-edit"></i> Cải thiện sản phẩm
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-refresh AI suggestions every 30 seconds if available
+        {% if analysis.ai_enhanced %}
+        setInterval(function() {
+            // Optional: Add real-time updates
+        }, 30000);
+        {% endif %}
+    </script>
+</body>
+</html>

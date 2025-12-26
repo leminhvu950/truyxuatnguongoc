@@ -3,26 +3,36 @@
 {% block title %}Quản lý Users{% endblock %}
 {% block page_title %}Quản lý Users{% endblock %}
 
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item active">Quản lý Users</li>
+{% endblock %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <p class="text-muted mb-0">Quản lý tài khoản người dùng trong hệ thống</p>
     </div>
-    <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">
+    <a href="{{ url_for('admin.create_user') }}" class="btn btn-admin btn-admin-success">
         <i class="fas fa-user-plus"></i> Tạo người dùng mới
     </a>
 </div>
 
-<div class="card">
-    <div class="card-body">
+<div class="card admin-card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-users"></i> Danh sách người dùng ({{ users|length }})
+        </h5>
+    </div>
+    <div class="card-body p-0">
         {% if users %}
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table admin-table mb-0">
                     <thead>
                         <tr>
-                            <th>Tên đăng nhập</th>
-                            <th>Họ tên</th>
+                            <th>Người dùng</th>
                             <th>Vai trò</th>
+                            <th>Thông tin liên hệ</th>
                             <th>Ngày tạo</th>
                             <th>Thao tác</th>
                         </tr>
@@ -31,33 +41,57 @@
                         {% for user in users %}
                         <tr>
                             <td>
-                                <strong>{{ user.username }}</strong>
-                                {% if user.username == session.user %}
-                                    <span class="badge bg-primary ms-2">Bạn</span>
-                                {% endif %}
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ user.full_name }}</div>
+                                        <small class="text-muted">@{{ user.username }}</small>
+                                        {% if user.username == session.user %}
+                                            <span class="badge bg-primary ms-2">Bạn</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
                             </td>
-                            <td>{{ user.full_name }}</td>
                             <td>
                                 {% if user.get('role') == 'admin' %}
-                                    <span class="badge bg-danger">
+                                    <span class="admin-badge badge-admin">
                                         <i class="fas fa-user-shield"></i> Admin
                                     </span>
                                 {% else %}
-                                    <span class="badge bg-secondary">
+                                    <span class="admin-badge badge-user">
                                         <i class="fas fa-user"></i> User
                                     </span>
                                 {% endif %}
                             </td>
-                            <td>{{ user.get('created_at', 'N/A') }}</td>
+                            <td>
+                                <div>
+                                    {% if user.get('email') %}
+                                        <div><i class="fas fa-envelope text-muted"></i> {{ user.email }}</div>
+                                    {% endif %}
+                                    {% if user.get('phone') %}
+                                        <div><i class="fas fa-phone text-muted"></i> {{ user.phone }}</div>
+                                    {% endif %}
+                                    {% if not user.get('email') and not user.get('phone') %}
+                                        <small class="text-muted">Chưa cập nhật</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ user.get('created_at', 'N/A') }}</small>
+                            </td>
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ url_for('admin.edit_user', username=user.username) }}" 
-                                       class="btn btn-sm btn-outline-primary">
+                                       class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     {% if user.username != session.user %}
                                         <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                onclick="confirmDelete('{{ user.username }}', '{{ user.full_name }}')">
+                                                onclick="confirmDelete('{{ user.username }}', '{{ user.full_name }}')"
+                                                title="Xóa người dùng">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     {% endif %}
@@ -69,11 +103,13 @@
                 </table>
             </div>
         {% else %}
-            <div class="text-center text-muted py-5">
-                <i class="fas fa-users fa-3x mb-3"></i>
-                <h5>Chưa có người dùng nào</h5>
-                <p>Hãy tạo người dùng đầu tiên</p>
-                <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">
+            <div class="admin-empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="empty-title">Chưa có người dùng nào</div>
+                <div class="empty-desc">Hãy tạo người dùng đầu tiên để bắt đầu</div>
+                <a href="{{ url_for('admin.create_user') }}" class="btn btn-admin btn-admin-success">
                     <i class="fas fa-user-plus"></i> Tạo người dùng
                 </a>
             </div>
@@ -86,21 +122,25 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Xác nhận xóa</h5>
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> Xác nhận xóa
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p>Bạn có chắc chắn muốn xóa người dùng <strong id="deleteUserName"></strong>?</p>
-                <p class="text-danger">
+                <div class="admin-alert alert-danger">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Hành động này không thể hoàn tác!
-                </p>
+                    <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Hủy
+                </button>
                 <form id="deleteForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Xóa
+                    <button type="submit" class="btn btn-admin btn-admin-danger">
+                        <i class="fas fa-trash"></i> Xóa người dùng
                     </button>
                 </form>
             </div>

@@ -102,8 +102,8 @@ def login_required(f):
     """Decorator để yêu cầu đăng nhập"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login', next=request.url))
+        if 'user' not in session:
+            return redirect(url_for('auth.login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -214,15 +214,16 @@ def delete_product_files(product_id):
 
 def get_user_info(session):
     """Lấy thông tin user từ session"""
-    if 'user_id' not in session:
+    if 'user' not in session:
         return None
 
     users_data = load_users()
     for user in users_data.get('users', []):
-        if user.get('username') == session.get('user_id'):
+        if user.get('username') == session.get('user'):
             return {
                 'username': user.get('username'),
-                'full_name': user.get('full_name', user.get('username'))
+                'full_name': user.get('full_name', user.get('username')),
+                'role': user.get('role', 'user')
             }
     return None
 

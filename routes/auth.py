@@ -21,7 +21,7 @@ def login():
         for user in users_data.get('users', []):
             if user.get('username') == username and utils.verify_password(password, user.get('password', '')):
                 # Đăng nhập thành công
-                session['user_id'] = username
+                session['user'] = username
                 session['user_name'] = user.get('full_name', username)
 
                 # Chuyển đến trang được yêu cầu hoặc trang chủ
@@ -80,7 +80,7 @@ def register():
         utils.save_users(users_data)
 
         # Tự động đăng nhập sau khi đăng ký
-        session['user_id'] = username
+        session['user'] = username
         session['user_name'] = full_name
 
         return redirect(url_for('main.index'))
@@ -97,7 +97,7 @@ def logout():
 @utils.login_required
 def profile():
     """Trang thông tin cá nhân - xem và sửa"""
-    current_username = session.get('user_id')
+    current_username = session.get('user')
     users_data = utils.load_users()
 
     # Tìm user hiện tại
